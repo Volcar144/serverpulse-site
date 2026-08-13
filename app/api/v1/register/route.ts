@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
         }
 
         const secretKey = "sp_secret_" + randomBytes(32).toString("base64url")
-        const keyHash:string = createHash('sha265').update(secretKey).digest('base64')
+        const keyHash:string = createHash('sha256').update(secretKey).digest('base64')
 
         await db.orm.public.Server.where({id: parsed.id}).update({keyHash: keyHash});
 
