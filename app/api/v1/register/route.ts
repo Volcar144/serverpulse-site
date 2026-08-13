@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({secret: secretKey, server_name: server.name, server_id: server.id })
     } catch(err){
+        console.log(err)
         return NextResponse.json({ error: "Internal error occurred while processing db records" }, {status:500})
     }
 }
