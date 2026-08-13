@@ -5,6 +5,7 @@ import { randomBytes } from "crypto";
 import { createHash } from "crypto";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import {date} from "better-auth";
 
 const ratelimit = new Ratelimit({
     redis: Redis.fromEnv(),
@@ -45,9 +46,9 @@ export async function POST(req: NextRequest) {
         }
 
         const secretKey = "sp_secret_" + randomBytes(32).toString("base64url")
-        const keyHash:string = createHash('sha265').update(secretKey).digest('base64')
+        const keyHash:string = createHash('sha256').update(secretKey).digest('base64')
 
-        await db.orm.public.Server.where({id: parsed.id}).update({keyHash: keyHash});
+        await db.orm.public.Server.where({id: parsed.id}).update({keyHash: keyHash, status: "ACTIVE"});
 
         return NextResponse.json({secret: secretKey, server_name: server.name, server_id: server.id })
     } catch(err){
