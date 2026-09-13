@@ -1,0 +1,187 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  passkeys      Passkey[]
+  servers       Server[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model Passkey {
+  id           String    @id
+  name         String?
+  publicKey    String
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentialID String
+  counter      Int
+  deviceType   String
+  backedUp     Boolean
+  transports   String?
+  createdAt    DateTime?
+  aaguid       String?
+
+  @@index([userId])
+  @@index([credentialID])
+  @@map("passkey")
+}
+
+enum ServerStatus {
+  PENDING
+  ACTIVE
+}
+
+model Server {
+  id        String       @id @default(uuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+
+  name      String
+  status    ServerStatus @default(PENDING)
+  keyHash   String?      @unique
+  retentionDays Int      @default(2)
+
+  mcVersion String?
+  pluginVersion String?
+
+  createdAt DateTime @default(now())
+  registeredAt DateTime?
+
+  crashReports CrashReport[]
+  metrics      Metric[]
+  metricsMin   MetricMinute[]
+  MetricsHr    MetricHourly[]
+
+  @@map("server")
+}
+
+model Metric {
+  id        BigInt   @id @default(autoincrement())
+  serverId  String
+  server    Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  tps       Float
+  mspt      Float
+  players   Int
+  memory    BigInt
+  entities  Int
+  chunks    Int
+
+  @@index([serverId, createdAt])
+  @@map("metrics")
+}
+
+model MetricMinute {
+  id          BigInt   @id @default(autoincrement())
+  serverId    String
+  server      Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  bucketStart DateTime
+
+  tpsAvg      Float
+  tpsMin      Float
+  msptAvg     Float
+  msptMax     Float
+  playersAvg  Int
+  memoryAvg   BigInt
+  entitiesAvg Int
+  chunksAvg   Int
+
+  @@index([serverId, bucketStart])
+  @@map("metrics_minute")
+}
+
+model MetricHourly {
+  id          BigInt   @id @default(autoincrement())
+  serverId    String
+  server      Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  bucketStart DateTime
+
+  tpsAvg      Float
+  tpsMin      Float
+  msptAvg     Float
+  msptMax     Float
+  playersAvg  Int
+  memoryAvg   BigInt
+  entitiesAvg Int
+  chunksAvg   Int
+
+  @@index([serverId, bucketStart])
+  @@map("metrics_hourly")
+}
+
+model CrashReport {
+  id           String   @id @default(uuid())
+  serverId     String
+  server       Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  uploadedLogs String
+  uploadedAt   DateTime @default(now())
+
+  @@map("crash_reports")
+}
