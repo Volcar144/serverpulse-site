@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
-import { streamToString } from "@/lib/utils";
-import { db } from "@/prisma/db";
-import { createHash } from "crypto";
+import {NextRequest, NextResponse} from "next/server";
+import {Ratelimit} from "@upstash/ratelimit";
+import {Redis} from "@upstash/redis";
+import {gzip} from "node:zlib";
+import {decompressGzip, streamToString} from "@/lib/utils.ts";
+import {db} from "@/prisma/db.ts";
+import {createHash} from "crypto";
 
 const ratelimit = new Ratelimit({
     redis: Redis.fromEnv(),
@@ -33,19 +34,32 @@ export async function POST(req: NextRequest){
         );
     }
 
-    interface checkBody {
-        id: string;
+    interface crashReportedBody {
+        serverId: string
+        logs: string
     }
+
+    //Logs come in gzipped
     const body = await streamToString(req.body)
-    let parsed:checkBody = {id: ""}
+    let parsed:crashReportedBody = {serverId: "", logs: ""}
     try{
         parsed = JSON.parse(body);
     } catch(err){
         return NextResponse.json({error:"Unable to parse body"}, {status:400})
     }
 
-    try{
-        const server = await db.server.findUnique({ where: { id: parsed.id } })
+
+    //Decode the logs (Postgres compresses them at rest)
+    const encoder = new TextEncoder();
+
+    const uint8Array: Uint8Array = encoder.encode(parsed.logs);
+
+    parsed.logs = await decompressGzip(uint8Array);
+
+    try {
+        const server = await db.server.findUnique({
+            where: {id: parsed.serverId},
+        })
 
         if(!server){
             return NextResponse.json({error: "Server not found"}, {status: 404})
@@ -64,13 +78,19 @@ export async function POST(req: NextRequest){
         const token = authHeader.split(' ')[1];
         const hashedToken = createHash('sha256').update(token).digest('base64')
 
-        if(hashedToken == keyHash){
-            return NextResponse.json({message: "success"}, {status:200})
-        } else {
+        if(hashedToken != keyHash){
             return NextResponse.json({error: "Key Invalid"}, {status: 401})
         }
-    } catch (err) {
-        console.log(err)
-        return NextResponse.json({error: "Internal Error"}, {status:500})
+
+        db.crashReport.create({
+            data: {
+                serverId: parsed.logs,
+                uploadedLogs: parsed.logs,
+            }
+        })
+
+        return NextResponse.json({body: "Sucessfully uploaded"}, {status: 200})
+    } catch (e) {
+        return NextResponse.json({error: "Failed to fetch server logs: " + e}, {status: 500})
     }
 }

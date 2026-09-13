@@ -13,4 +13,14 @@ export async function streamToString(stream: any) {
   return Buffer.concat(chunks).toString('utf8');
 }
 
+export async function decompressGzip(compressedData: Uint8Array): Promise<string> {
+  const decompressionStream = new DecompressionStream("gzip");
+
+  const bytes = new Uint8Array(compressedData); // fresh copy backed by a plain ArrayBuffer
+  const blob = new Blob([bytes.buffer]);
+  const stream = blob.stream().pipeThrough(decompressionStream);
+
+  const response = new Response(stream);
+  return await response.text();
+}
 

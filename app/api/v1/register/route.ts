@@ -1,11 +1,10 @@
-import {NextRequest, NextResponse} from "next/server";
-import {streamToString} from "@/lib/utils.ts";
-import {db} from "@/prisma/db.ts";
+import { NextRequest, NextResponse } from "next/server";
+import { streamToString } from "@/lib/utils";
+import { db } from "@/prisma/db";
 import { randomBytes } from "crypto";
 import { createHash } from "crypto";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import {date} from "better-auth";
 
 const ratelimit = new Ratelimit({
     redis: Redis.fromEnv(),
@@ -36,7 +35,7 @@ export async function POST(req: NextRequest) {
     }
 
     try{
-        const server = await db.orm.public.Server.where({id: parsed.id}).first();
+        const server = await db.server.findUnique({ where: { id: parsed.id } });
         if(!server){
             return NextResponse.json({ error: "Unable to find server with that id"}, {status: 404})
         }
@@ -48,7 +47,7 @@ export async function POST(req: NextRequest) {
         const secretKey = "sp_secret_" + randomBytes(32).toString("base64url")
         const keyHash:string = createHash('sha256').update(secretKey).digest('base64')
 
-        await db.orm.public.Server.where({id: parsed.id}).update({keyHash: keyHash, status: "ACTIVE"});
+        await db.server.update({ where: { id: parsed.id }, data: { keyHash: keyHash, status: "ACTIVE" } });
 
         return NextResponse.json({secret: secretKey, server_name: server.name, server_id: server.id })
     } catch(err){

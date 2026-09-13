@@ -8,13 +8,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "contract:emit": "prisma-next contract emit"
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
     "@better-auth/passkey": "^1.6.26",
-    "@prisma/language-server": "^31.11.0",
-    "@prisma/orm-postgres": "8.0.0-rc.1",
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.2",
@@ -24,8 +26,8 @@
     "dotenv": "^17.4.2",
     "lucide-react": "^1.31.0",
     "next": "16.1.6",
+    "pg": "^8.13.0",
     "postcss": "^8.5.26",
-    "prisma-next": "8.0.0-rc.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "shadcn": "^4.16.2",
@@ -35,10 +37,12 @@
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/pg": "^8.15.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "prisma": "^7.10.0",
     "tsx": "^4.7.1",
     "typescript": "^5"
   }

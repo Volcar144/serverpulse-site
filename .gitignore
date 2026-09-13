@@ -1,5 +1,6 @@
 node_modules/
 dist/
 .env
-.env
 .next/
+generated/
+prisma/migrations/.keep
