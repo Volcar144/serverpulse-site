@@ -30,16 +30,10 @@ export async function GET(req: NextRequest){
         return NextResponse.json({error: "Most recent version not found"}, {status:404})
     }
 
-    const data = new TextEncoder().encode(mostRecent.sha256);
-    const hexSha = Array.from(data).reduce((hex, byte) =>
-            hex + byte.toString(16).padStart(2, '0'),
-        ''
-    );
-
     const toReturn: payload = {
         version: mostRecent.version,
         url: `${process.env.BETTER_AUTH_URL}/downloads/${mostRecent.fileName}`,
-        sha256: hexSha,
+        sha256: mostRecent.sha256,
     }
 
     return NextResponse.json(toReturn, {status: 200})
