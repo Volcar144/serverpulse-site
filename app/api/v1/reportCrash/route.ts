@@ -52,8 +52,7 @@ export async function POST(req: NextRequest){
     //Decode the logs (Postgres compresses them at rest)
     const encoder = new TextEncoder();
 
-    const uint8Array: Uint8Array = encoder.encode(parsed.logs);
-
+    const uint8Array = Uint8Array.from(Buffer.from(parsed.logs, "base64"));
     parsed.logs = await decompressGzip(uint8Array);
 
     try {
