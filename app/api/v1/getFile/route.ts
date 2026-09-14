@@ -42,4 +42,6 @@ export async function GET(req: NextRequest){
         sha256: hexSha,
     }
 
+    return NextResponse.json(toReturn, {status: 200})
+
 }
