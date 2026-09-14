@@ -1,4 +1,6 @@
 allowBuilds:
+  '@astryxdesign/cli': true
+  '@astryxdesign/core': true
   '@prisma/engines': true
   esbuild: true
   prisma: true
