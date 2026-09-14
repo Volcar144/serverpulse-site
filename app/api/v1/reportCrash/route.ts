@@ -39,21 +39,14 @@ export async function POST(req: NextRequest){
         logs: string
     }
 
-    //Logs come in gzipped
+    //Logs come in decompressed
     const body = await streamToString(req.body)
     let parsed:crashReportedBody = {serverId: "", logs: ""}
     try{
         parsed = JSON.parse(body);
-    } catch(err){
-        return NextResponse.json({error:"Unable to parse body"}, {status:400})
+    } catch(err) {
+        return NextResponse.json({error: "Unable to parse body"}, {status: 400})
     }
-
-
-    //Decode the logs (Postgres compresses them at rest)
-    const encoder = new TextEncoder();
-
-    const uint8Array = Uint8Array.from(Buffer.from(parsed.logs, "base64"));
-    parsed.logs = await decompressGzip(uint8Array);
 
     try {
         const server = await db.server.findUnique({
@@ -81,6 +74,7 @@ export async function POST(req: NextRequest){
             return NextResponse.json({error: "Key Invalid"}, {status: 401})
         }
 
+        //No compression needed TOAST is enough
         await db.crashReport.create({
             data: {
                 serverId: parsed.serverId,
