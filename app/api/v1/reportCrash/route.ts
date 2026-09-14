@@ -35,13 +35,13 @@ export async function POST(req: NextRequest){
     }
 
     interface crashReportedBody {
-        serverId: string
+        id: string
         logs: string
     }
 
     //Logs come in decompressed
     const body = await streamToString(req.body)
-    let parsed:crashReportedBody = {serverId: "", logs: ""}
+    let parsed:crashReportedBody = {id: "", logs: ""}
     try{
         parsed = JSON.parse(body);
     } catch(err) {
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest){
 
     try {
         const server = await db.server.findUnique({
-            where: {id: parsed.serverId},
+            where: {id: parsed.id},
         })
 
         if(!server){
@@ -77,13 +77,14 @@ export async function POST(req: NextRequest){
         //No compression needed TOAST is enough
         await db.crashReport.create({
             data: {
-                serverId: parsed.serverId,
+                serverId: parsed.id,
                 uploadedLogs: parsed.logs,
             }
         })
 
         return NextResponse.json({body: "Sucessfully uploaded"}, {status: 200})
     } catch (e) {
+        console.log(e)
         return NextResponse.json({error: "Failed to fetch server logs: " + e}, {status: 500})
     }
 }
