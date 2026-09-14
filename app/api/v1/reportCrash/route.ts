@@ -82,9 +82,9 @@ export async function POST(req: NextRequest){
             return NextResponse.json({error: "Key Invalid"}, {status: 401})
         }
 
-        db.crashReport.create({
+        await db.crashReport.create({
             data: {
-                serverId: parsed.logs,
+                serverId: parsed.serverId,
                 uploadedLogs: parsed.logs,
             }
         })
