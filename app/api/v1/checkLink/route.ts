@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import { streamToString } from "@/lib/utils";
 import { db } from "@/prisma/db";
 import { createHash } from "crypto";
 
@@ -36,12 +35,14 @@ export async function POST(req: NextRequest){
     interface checkBody {
         id: string;
     }
-    const body = await streamToString(req.body)
-    let parsed:checkBody = {id: ""}
-    try{
-        parsed = JSON.parse(body);
-    } catch(err){
-        return NextResponse.json({error:"Unable to parse body"}, {status:400})
+    let parsed: checkBody;
+    try {
+        parsed = await req.json() as checkBody;
+    } catch (err) {
+        return NextResponse.json({ error: "Unable to parse body" }, { status: 400 });
+    }
+    if (!parsed?.id || typeof parsed.id !== "string" || parsed.id.trim() === "") {
+        return NextResponse.json({ error: "Missing or invalid 'id' in body" }, { status: 400 });
     }
 
     try{

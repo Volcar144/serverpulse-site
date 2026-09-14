@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { streamToString } from "@/lib/utils";
 import { db } from "@/prisma/db";
 import { randomBytes } from "crypto";
 import { createHash } from "crypto";
@@ -26,12 +25,14 @@ export async function POST(req: NextRequest) {
     interface registerBody {
         id: string;
     }
-    const body = await streamToString(req.body)
-    let parsed:registerBody = {id: ""}
-    try{
-        parsed = JSON.parse(body);
-    } catch(err){
-        return NextResponse.json({error:"Unable to parse body"}, {status:400})
+    let parsed: registerBody;
+    try {
+        parsed = await req.json() as registerBody;
+    } catch (err) {
+        return NextResponse.json({ error: "Unable to parse body" }, { status: 400 });
+    }
+    if (!parsed?.id || typeof parsed.id !== "string" || parsed.id.trim() === "") {
+        return NextResponse.json({ error: "Missing or invalid 'id' in body" }, { status: 400 });
     }
 
     try{
