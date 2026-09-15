@@ -53,4 +53,5 @@ export async function POST(req: NextRequest){
     } catch(err) {
         return NextResponse.json({error: "Unable to parse body"}, {status: 400})
     }
+    return NextResponse.json({message: "YESS"}, {status:200})
 }
