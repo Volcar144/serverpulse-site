@@ -14,8 +14,8 @@ interface payload {
 
 const versions:version[] = [
     {
-        fileName: "splink-1.0.0.jar",
-        version: "1.0.1",
+        fileName: "splink-1.1.0.jar",
+        version: "1.1.0",
         sha256: "5c4d4e996c8830cd4f85a9748fd1e741aaeaf41ab51aed3e5ef5290a0dfb2cce"
     }
 ]
