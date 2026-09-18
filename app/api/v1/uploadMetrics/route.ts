@@ -84,6 +84,8 @@ export async function POST(req: NextRequest){
 
         const body = buildMetricsRows(parsed);
         db.metric.createMany({data: body});
+
+        console.log(body)
         return NextResponse.json({message: "Success"}, {status: 200})
 
     } catch (e) {
