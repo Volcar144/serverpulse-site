@@ -152,6 +152,7 @@ model MetricMinute {
   entitiesAvg Int
   chunksAvg   Int
 
+  @@unique([serverId, bucketStart])
   @@index([serverId, bucketStart])
   @@map("metrics_minute")
 }
@@ -171,10 +172,10 @@ model MetricHourly {
   entitiesAvg Int
   chunksAvg   Int
 
+  @@unique([serverId, bucketStart])
   @@index([serverId, bucketStart])
   @@map("metrics_hourly")
 }
-
 model CrashReport {
   id           String   @id @default(uuid())
   serverId     String
