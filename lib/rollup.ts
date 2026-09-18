@@ -24,6 +24,11 @@ export async function rollupMinute() {
     GROUP BY "serverId", date_trunc('minute', "createdAt")
     ON CONFLICT ("serverId", "bucketStart") DO NOTHING;
   `;
+
+    await db.$executeRaw`
+    DELETE FROM metrics
+    WHERE "createdAt" < ${upperBound};
+  `;
 }
 
 export async function rollupHourly() {
