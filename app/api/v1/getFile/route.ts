@@ -50,6 +50,4 @@ export async function GET(req: NextRequest){
         sha256: mostRecent.sha256,
     }
 
-    return NextResponse.json(toReturn, {status: 200})
-
 }
