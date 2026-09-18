@@ -5,13 +5,6 @@ import {purgeExpiredMetrics, rollupHourly} from "@/lib/rollup.ts";
 export async function POST(req: NextRequest){
     const authHeader = req.headers.get("Authorization");
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return NextResponse.json(
-            { error: 'Missing or malformed authorization header' },
-            { status: 401 }
-        );
-    }
-
     if(authHeader !== `Bearer ${process.env.CRON_SECRET}`){
         return NextResponse.json(
             {error: 'Invalid auth header'},

@@ -55,14 +55,14 @@ export async function rollupHourly() {
 export async function purgeExpiredMetrics() {
     await db.$executeRaw`
     DELETE FROM metrics m
-    USING servers s
+    USING server s
     WHERE m."serverId" = s.id
       AND m."createdAt" < now() - (s."retentionDays" || ' days')::interval;
   `;
 
     await db.$executeRaw`
     DELETE FROM metrics_minute mm
-    USING servers s
+    USING server s
     WHERE mm."serverId" = s.id
       AND mm."bucketStart" < now() - (s."retentionDays" || ' days')::interval;
   `;
